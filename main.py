@@ -7,6 +7,7 @@
 # ============================================================
 
 from kivy.app import App
+from kivy.utils import platform
 from kivy.core.window import Window
 from kivy.metrics import dp, sp
 from kivy.graphics import Color, RoundedRectangle, Line
@@ -1786,11 +1787,19 @@ class ContentScreen(Screen):
             halign="left",
             valign="top",
             padding=[dp(18), dp(15)],
+            size_hint_x=1,
             size_hint_y=None
         )
 
+        def update_content_text(instance, width):
+            instance.text_size = (
+                max(1, width - dp(36)),
+                None
+            )
+            instance.height = instance.texture_size[1] + dp(30)
+
         self.text_label.bind(
-            texture_size=self.text_label.setter("size")
+            width=update_content_text
         )
 
         scroll.add_widget(self.text_label)
@@ -1855,11 +1864,19 @@ class PaperScreen(Screen):
             halign="left",
             valign="top",
             padding=[dp(16), dp(12)],
+            size_hint_x=1,
             size_hint_y=None
         )
 
+        def update_paper_text(instance, width):
+            instance.text_size = (
+                max(1, width - dp(32)),
+                None
+            )
+            instance.height = instance.texture_size[1] + dp(24)
+
         self.paper_text.bind(
-            texture_size=self.paper_text.setter("size")
+            width=update_paper_text
         )
 
         scroll.add_widget(self.paper_text)
@@ -2108,6 +2125,35 @@ class KuzratApp(App):
     def build(self):
 
         Window.clearcolor = BG
+
+        # Android fullscreen / immersive mode
+        if platform == "android":
+            try:
+                from jnius import autoclass
+
+                PythonActivity = autoclass(
+                    "org.kivy.android.PythonActivity"
+                )
+                View = autoclass(
+                    "android.view.View"
+                )
+
+                activity = PythonActivity.mActivity
+                decor = activity.getWindow().getDecorView()
+
+                flags = (
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                )
+
+                decor.setSystemUiVisibility(flags)
+
+            except Exception:
+                pass
 
         sm = ScreenManager(
             transition=FadeTransition(duration=0.15)
