@@ -46,7 +46,10 @@ jobs:
           run: echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
       - name: Build APK
         run: |
-          yes | buildozer -v android debug
+          export JAVA_HOME="$JAVA_HOME_17_X64"
+            export PATH="$JAVA_HOME/bin:$PATH"
+            java -version
+            yes | buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
