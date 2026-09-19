@@ -1,6 +1,6 @@
 name: Build KUZRAT APK
 
-on:
+"on":
   push:
     branches:
       - main
